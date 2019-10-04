@@ -13,7 +13,24 @@ class_names = ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", 
 
 # Normalize; img will look the same, but data is hella shrunk
 train_images = train_images / 255.0
+test_images = test_images / 255.0
 
-if __name__ == "__main__":
-    plt.imshow(train_images[0], cmap=plt.cm.binary)
-    plt.show()
+# Build the braaaaaain
+model = keras.Sequential([
+    keras.layers.Flatten(input_shape=(28, 28)),
+    keras.layers.Dense(128, activation="relu"), # Rectify linear unit; fast and works well for variety of stuff.
+    keras.layers.Dense(10, activation="softmax") # softmax -> vals add to 1
+])
+
+# adam is std optimizer, no more details yet.
+# ditto the rest. Wow, useless tutorial tbh
+model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+
+# Actually train it
+model.fit(train_images, train_labels, epochs=5)
+
+# Results are in
+test_loss, test_acc = model.evaluate(test_images, test_labels)
+
+print("Tested accuracy:\t", test_acc)
+print("Test loss:\t", test_loss)
