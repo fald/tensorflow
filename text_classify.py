@@ -65,8 +65,10 @@ results = model.evaluate(test_data, test_labels)
 
 print(results)
 
-test_review = test_data[0]
-predict = model.predict([test_review])
-print("Review: ", decode_review(test_review))
-print("Prediction:", predict[0])
-print("Actual:", test_labels[0])
+for i in range(5):
+    test_review = test_data[i]
+    predict = model.predict([test_review])
+    print("Review #" + str(i) + ": ", decode_review(test_review))
+    print("Prediction:", predict[i])
+    print("Actual:", test_labels[i])
+    print("\n\n")
