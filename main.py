@@ -35,12 +35,12 @@ model.fit(train_images, train_labels, epochs=5)
 # print("Tested accuracy:\t", test_acc)
 # print("Test loss:\t", test_loss)
 
-# 
+# If prediction a single item, encapsulate it in a list, as this is the expected data type.
 prediction = model.predict(test_images)
 
 for i in range(5):
     plt.grid(False)
-    plt.imshow(test_images[i], cmp=plt.cm.binary)
+    plt.imshow(test_images[i], cmap=plt.cm.binary)
     plt.xlabel("Actual:" + class_names[test_labels[i]])
     plt.title("Prediction " + class_names[np.argmax(prediction[i])])
     plt.show()
