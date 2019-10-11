@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 ###
 # SETTINGS
 # ###
-vocab_size = 10000
-longest_review = 256
+vocab_size = 88000
+longest_review = 512
 
 
 ###
@@ -46,41 +46,41 @@ test_data = keras.preprocessing.sequence.pad_sequences(test_data, value=word_ind
 def decode_review(text):
     return " ".join([reverse_word_index.get(i, "?") for i in text])
 
-# for i in range(5):
-#     print(decode_review(test_data[i]))
+for i in range(5):
+    print(decode_review(test_data[i]))
 
 
-###
+##
 # MODEL
-###
+##
 
-# model = keras.Sequential()
-# model.add(keras.layers.Embedding(10000, 16))            # Embedding into 16D vectors for word closeness
-# model.add(keras.layers.GlobalAveragePooling1D())        # Average of the embedded vals
-# model.add(keras.layers.Dense(16, activation="relu"))    # find word patterns
-# model.add(keras.layers.Dense(1, activation="sigmoid"))  # Final output; good or bad?
+model = keras.Sequential()
+model.add(keras.layers.Embedding(10000, 16))            # Embedding into 16D vectors for word closeness
+model.add(keras.layers.GlobalAveragePooling1D())        # Average of the embedded vals
+model.add(keras.layers.Dense(16, activation="relu"))    # find word patterns
+model.add(keras.layers.Dense(1, activation="sigmoid"))  # Final output; good or bad?
 
-# model.summary()
-# model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+model.summary()
+model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
-# x_val = train_data[:10000]
-# y_val = train_labels[:10000]
+x_val = train_data[:88000]
+y_val = train_labels[:88000]
 
-# x_train = train_data[10000:]
-# y_train = train_labels[10000:]
+x_train = train_data[88000:]
+y_train = train_labels[88000:]
 
-# fitModel = model.fit(x_train, y_train, epochs=40, batch_size=512, validation_data=(x_val, y_val), verbose=1)
-# results = model.evaluate(test_data, test_labels)
+fitModel = model.fit(x_train, y_train, epochs=40, batch_size=512, validation_data=(x_val, y_val), verbose=1)
+results = model.evaluate(test_data, test_labels)
 
-# print(results)
+print(results)
 
-# for i in range(5):
-#     test_review = test_data[i]
-#     predict = model.predict([test_review])
-#     print("Review #" + str(i) + ": ", decode_review(test_review))
-#     print("Prediction:", predict[i])
-#     print("Actual:", test_labels[i])
-#     print("\n\n")
+for i in range(5):
+    test_review = test_data[i]
+    predict = model.predict([test_review])
+    print("Review #" + str(i) + ": ", decode_review(test_review))
+    print("Prediction:", predict[i])
+    print("Actual:", test_labels[i])
+    print("\n\n")
 
 def review_encode(s):
     encoded = [1] # <START> = 1
@@ -89,6 +89,7 @@ def review_encode(s):
             encoded.append(word_index[word.lower()])
         else:
             encoded.append(2) # = <UNK>
+    return encoded
 
 # model.save("text_classification.h5")
 model = keras.models.load_model("text_classification.h5")
@@ -101,7 +102,7 @@ model = keras.models.load_model("text_classification.h5")
 # Load in files and do some pre-processign
 with open("example_review.txt", encoding="utf-8") as f:
     for line in f.readlines():
-        nline = line.replace(",", "").replace(".", "").replace(":", "").replace(";", "").replace(")", "").replace("(", "").replact("\"", "").strip().split(" ")
+        nline = line.replace(",", "").replace(".", "").replace(":", "").replace(";", "").replace(")", "").replace("(", "").replace("\"", "").strip().split(" ")
         encode = review_encode(nline)
         encode = keras.preprocessing.sequence.pad_sequences([encode], value=word_index["<PAD>"], padding="post", maxlen=longest_review)
         predict = model.predict(encode)
