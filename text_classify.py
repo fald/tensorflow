@@ -3,10 +3,12 @@ from tensorflow import keras
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Naturally these should be sequestered to functions instead of this awful commenting out once no longer needed, but eh.
+
 ###
 # SETTINGS
-###
-vocab_size = 88000
+# ###
+vocab_size = 10000
 longest_review = 256
 
 
@@ -33,11 +35,11 @@ word_index["<START>"] = 1   # start
 word_index["<UNK>"] = 2     # unkown
 word_index["<UNUSED>"] = 3  # unused
 
-# I'ma be real with me. I'm lost and just following orders right about now. Hopefully going through the Stanford course later will lift the fog.
+# # I'ma be real with me. I'm lost and just following orders right about now. Hopefully going through the Stanford course later will lift the fog.
 reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
 
-# Want to pad everything so the set input/output neurons fit, though I guess a general intelligence wouldn't need it. But what am I, a god already? chill.
-# So, either choose the longest review, or pick an arbitrarily length; cut off reviews longer, or pad ones shorter.
+# # Want to pad everything so the set input/output neurons fit, though I guess a general intelligence wouldn't need it. But what am I, a god already? chill.
+# # So, either choose the longest review, or pick an arbitrarily length; cut off reviews longer, or pad ones shorter.
 train_data = keras.preprocessing.sequence.pad_sequences(train_data, value=word_index["<PAD>"], padding="post", maxlen=longest_review)
 test_data = keras.preprocessing.sequence.pad_sequences(test_data, value=word_index["<PAD>"], padding="post", maxlen=longest_review)
 
@@ -52,32 +54,58 @@ def decode_review(text):
 # MODEL
 ###
 
-model = keras.Sequential()
-model.add(keras.layers.Embedding(10000, 16))            # Embedding into 16D vectors for word closeness
-model.add(keras.layers.GlobalAveragePooling1D())        # Average of the embedded vals
-model.add(keras.layers.Dense(16, activation="relu"))    # find word patterns
-model.add(keras.layers.Dense(1, activation="sigmoid"))  # Final output; good or bad?
+# model = keras.Sequential()
+# model.add(keras.layers.Embedding(10000, 16))            # Embedding into 16D vectors for word closeness
+# model.add(keras.layers.GlobalAveragePooling1D())        # Average of the embedded vals
+# model.add(keras.layers.Dense(16, activation="relu"))    # find word patterns
+# model.add(keras.layers.Dense(1, activation="sigmoid"))  # Final output; good or bad?
 
-model.summary()
-model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+# model.summary()
+# model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 
-x_val = train_data[:10000]
-y_val = train_labels[:10000]
+# x_val = train_data[:10000]
+# y_val = train_labels[:10000]
 
-x_train = train_data[10000:]
-y_train = train_labels[10000:]
+# x_train = train_data[10000:]
+# y_train = train_labels[10000:]
 
-fitModel = model.fit(x_train, y_train, epochs=40, batch_size=512, validation_data=(x_val, y_val), verbose=1)
-results = model.evaluate(test_data, test_labels)
+# fitModel = model.fit(x_train, y_train, epochs=40, batch_size=512, validation_data=(x_val, y_val), verbose=1)
+# results = model.evaluate(test_data, test_labels)
 
-print(results)
+# print(results)
 
-for i in range(5):
-    test_review = test_data[i]
-    predict = model.predict([test_review])
-    print("Review #" + str(i) + ": ", decode_review(test_review))
-    print("Prediction:", predict[i])
-    print("Actual:", test_labels[i])
-    print("\n\n")
+# for i in range(5):
+#     test_review = test_data[i]
+#     predict = model.predict([test_review])
+#     print("Review #" + str(i) + ": ", decode_review(test_review))
+#     print("Prediction:", predict[i])
+#     print("Actual:", test_labels[i])
+#     print("\n\n")
 
-model.save("text_classification.h5")
+def review_encode(s):
+    encoded = [1] # <START> = 1
+    for word in s:
+        if word.lower() in word_index:
+            encoded.append(word_index[word.lower()])
+        else:
+            encoded.append(2) # = <UNK>
+
+# model.save("text_classification.h5")
+model = keras.models.load_model("text_classification.h5")
+# Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2  
+# This means we support AVX, which can speed up processing time by a shitload.
+# If using GPU, ignore it; expensive operations dispatched to GPU and non-issue,
+# Use import os; os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'; to quell warning.
+# Else: build tensorflow from the source optimized for particular CPU; ie not pip install
+
+# Load in files and do some pre-processign
+with open("example_review.txt", encoding="utf-8") as f:
+    for line in f.readlines():
+        nline = line.replace(",", "").replace(".", "").replace(":", "").replace(";", "").replace(")", "").replace("(", "").replact("\"", "").strip().split(" ")
+        encode = review_encode(nline)
+        encode = keras.preprocessing.sequence.pad_sequences([encode], value=word_index["<PAD>"], padding="post", maxlen=longest_review)
+        predict = model.predict(encode)
+        print(line)
+        print(encode)
+        print(predict[0])
+        
