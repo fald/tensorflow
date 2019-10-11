@@ -4,13 +4,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 ###
+# SETTINGS
+###
+vocab_size = 88000
+longest_review = 256
+
+
+###
 # DATA LOADING
 ###
 
 data = keras.datasets.imdb
 
 # Load data's num_words = 10000 => take 10k most frequent words.
-(train_data, train_labels), (test_data, test_labels) = data.load_data(num_words=10000)
+(train_data, train_labels), (test_data, test_labels) = data.load_data(num_words=vocab_size)
 
 
 ###
@@ -31,8 +38,8 @@ reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
 
 # Want to pad everything so the set input/output neurons fit, though I guess a general intelligence wouldn't need it. But what am I, a god already? chill.
 # So, either choose the longest review, or pick an arbitrarily length; cut off reviews longer, or pad ones shorter.
-train_data = keras.preprocessing.sequence.pad_sequences(train_data, value=word_index["<PAD>"], padding="post", maxlen=256)
-test_data = keras.preprocessing.sequence.pad_sequences(test_data, value=word_index["<PAD>"], padding="post", maxlen=256)
+train_data = keras.preprocessing.sequence.pad_sequences(train_data, value=word_index["<PAD>"], padding="post", maxlen=longest_review)
+test_data = keras.preprocessing.sequence.pad_sequences(test_data, value=word_index["<PAD>"], padding="post", maxlen=longest_review)
 
 def decode_review(text):
     return " ".join([reverse_word_index.get(i, "?") for i in text])
@@ -72,3 +79,5 @@ for i in range(5):
     print("Prediction:", predict[i])
     print("Actual:", test_labels[i])
     print("\n\n")
+
+model.save("text_classification.h5")
